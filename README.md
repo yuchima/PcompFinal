@@ -1,3 +1,6 @@
-To run:
+#To run:
+under /sensorTag, do:
 $ node index.js
-Then open public/index.html to see the result
+#To stop:
+ctrl + C or press the two buttons on sensorTag
+accelerometer data will be saved in the xxx-acc-data.csv file
