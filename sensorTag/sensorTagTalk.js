@@ -40,6 +40,7 @@ SensorTag.discover(function(tag) {
     console.log('connectAndSetUp');
     console.log('id: ' + tag.id + ' type: ' + tag.type);
     // open csv stream
+    // TODO: append instead of overwrite
     writer.pipe(fs.createWriteStream(tag.id+'-acc-data.csv'));
     tag.connectAndSetUp(setAccelPeriod);		// when you connect and device is setup, call enableAccelMe
   }
