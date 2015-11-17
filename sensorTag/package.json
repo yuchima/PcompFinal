@@ -1,0 +1,15 @@
+{
+  "name": "sensorTag",
+  "version": "1.0.0",
+  "description": "reading sensorTag etc.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "sensortag": "^1.0.0",
+    "ws": "^0.8.0"
+  }
+}
