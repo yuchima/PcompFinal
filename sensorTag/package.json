@@ -9,6 +9,7 @@
   "author": "",
   "license": "",
   "dependencies": {
+    "node-osc": "^1.1.0",
     "sensortag": "^1.0.0",
     "ws": "^0.8.0"
   }
