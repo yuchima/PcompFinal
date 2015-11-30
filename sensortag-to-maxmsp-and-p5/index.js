@@ -52,13 +52,13 @@ function broadcast(accel) {
 /******************** sensorTag */
 
 var st = require('sensortag')
-    accel = [0, 0, 0]
+accel = [0, 0, 0]
 
 /******************** node-osc */
 
 var osc = require('node-osc')
-    osc_server = new osc.Server(3333, '127.0.0.1')
-    osc_client = new osc.Client('127.0.0.1', 3334)
+osc_server = new osc.Server(3333, '127.0.0.1')
+osc_client = new osc.Client('127.0.0.1', 3334)
 
 // test
 //var testSend = setInterval(function() {
@@ -73,42 +73,61 @@ st.discover(function (tag) {
 		process.exit(0);
 	});
 
+	//function connectAndSetUpMe() {
+	//	console.log('connect and setup...');
+	//	tag.connectAndSetUp(setAccelPeriod);
+	//}
+
 	function connectAndSetUpMe() {
 		console.log('connect and setup...');
-		tag.connectAndSetUp(setAccelPeriod);
+		tag.connectAndSetUp(enableAccel);
 	}
 
-  // set period/sample rate of the accelerometer (minimum period 100ms)
+	function enableAccel() {
+		console.log('enableAccelerometer');
+		tag.enableAccelerometer(setAccelPeriod);	// here we enable its range to be +-8G directly thru modifying common.js
+	}
+
+	//function enableAccel() {
+	//	console.log('enableAccelerometer');
+	//	tag.enableAccelerometer(setAccelRangeMax);
+	//}
+
+	//// set accelerometer of CC2540 to maximum range of -8 ~ 8G
+	//function setAccelRangeMax() {
+	//	console.log('set accelerometer range to max...');
+	//	tag.setAccelerometerRangeToMax(setAccelPeriod);
+	//}
+
+	// set period/sample rate of the accelerometer (minimum period 100ms)
 	function setAccelPeriod() {
 		console.log('set accelerometer period...');
-		tag.setAccelerometerPeriod(100, enableAccel);
+		tag.setAccelerometerPeriod(100, notifyMe);
 	}
 
-  function enableAccel() {
-		console.log('enableAccelerometer');
-		tag.enableAccelerometer(notifyMe);
-	}
-
-  function notifyMe() {
+	function notifyMe() {
+		console.log('begin notification');
 		tag.notifyAccelerometer(listenForAccel);
 		tag.notifySimpleKey(listenForButton);
 	}
 
-  function listenForAccel() {
-    tag.on('accelerometerChange', function(x, y, z) {
-      // store accelerometer data (in -8.0 ~ 8.0 G)
-      accel[0] = x.toFixed(3);
-      accel[1] = y.toFixed(3);
-      accel[2] = z.toFixed(3);
-      // send osc msgs
-      osc_client.send('sensorTag_accelerometer ' + accel[0] + ' ' + accel[1] + ' ' + accel[2]);
-      // broadcast accel data
-      if (connections.length > 0) {
-      	broadcast({ x:accel[0], y:accel[1], z:accel[2] });
-      }
-      console.log("message sent");
-    });
-  }
+	function listenForAccel() {
+		tag.on('accelerometerChange', function(x, y, z) {
+			// store accelerometer data (in -8.0 ~ 8.0 G)
+			accel[0] = x.toFixed(3);
+			accel[1] = y.toFixed(3);
+			accel[2] = z.toFixed(3);
+			// send osc msgs
+			var osc_msg = 'sensorTag_accelerometer ' + accel[0] + ' ' + accel[1] + ' ' + accel[2]
+			osc_client.send(osc_msg);
+			// broadcast accel data
+			if (connections.length > 0) {
+				broadcast({ x:accel[0], y:accel[1], z:accel[2] });
+			}
+			//console.log("message sent");
+			console.log(osc_msg);
+		});
+	}
 
 	function listenForButton() {
 		tag.on('simpleKeyChange', function(left, right) {
@@ -116,9 +135,9 @@ st.discover(function (tag) {
 			if (right) console.log('right: ' + right);
 			// if both buttons are pressed, disconnect:
 			if (left && right) tag.disconnect();
-    });
-  }
+		});
+	}
 
-  // Now that you've defined all the functions, start the process:
+	// Now that you've defined all the functions, start the process:
 	connectAndSetUpMe();
 })
