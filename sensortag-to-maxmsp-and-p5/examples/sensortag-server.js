@@ -1,6 +1,6 @@
-var fs = require('fs');
-var csvWriter = require('csv-write-stream');
-var writer = csvWriter({ headers: ['x','y','z'], sendHeaders: false });
+// var fs = require('fs');
+// var csvWriter = require('csv-write-stream');
+// var writer = csvWriter({ headers: ['x','y','z'], sendHeaders: false });
 var SensorTag = require('sensortag');
 // https://itp.nyu.edu/physcomp/labs/labs-serial-communication/lab-serial-communication-with-node-js/#Connecting_from_the_Browser_to_the_Node_Program
 // https://github.com/ITPNYU/physcomp/blob/master/labs2014/Node%20Serial%20Lab/wsServer.js
@@ -9,10 +9,6 @@ var SERVER_PORT = 8081;
 var wss = new WebSocketServer({port: SERVER_PORT});
 var connections = new Array;
 var accData = { x : 0, y : 0, z : 0 };
-
-// var Accelerometer = function() {
-//
-// }
 
 wss.on('connection', function(client) {
   console.log('New Connection');
@@ -36,7 +32,7 @@ SensorTag.discover(function(tag) {
 	tag.on('disconnect', function() {
 		console.log('disconnected!');
     // close csv stream
-    writer.end();
+    // writer.end();
 		process.exit(0);
 	});
 
@@ -45,7 +41,7 @@ SensorTag.discover(function(tag) {
     console.log('id: ' + tag.id + ' type: ' + tag.type);
     // open csv stream
     // TODO: append instead of overwrite
-    writer.pipe(fs.createWriteStream(tag.id+'-acc-data.csv'));
+    // writer.pipe(fs.createWriteStream(tag.id+'-acc-data.csv'));
     tag.connectAndSetUp(setAccelPeriod);		// when you connect and device is setup, call enableAccelMe
   }
 
@@ -74,7 +70,7 @@ SensorTag.discover(function(tag) {
       accData.z = z.toFixed(3);
       // console.log('\tx: '+accData.x+' G \ty: '+accData.y+'G \tz: '+accData.z+' G');
       // write csv data to the stream
-      writer.write([accData.x, accData.y, accData.z]);
+      // writer.write([accData.x, accData.y, accData.z]);
       // broadcast data (https://github.com/ITPNYU/physcomp/blob/master/labs2014/Node%20Serial%20Lab/wsServer.js)
       if (connections.length > 0) { broadcast(accData); }
     });
