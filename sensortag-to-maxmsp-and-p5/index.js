@@ -38,8 +38,13 @@ var osc = require('node-osc')
     osc_server = new osc.Server(3333, '127.0.0.1')
     osc_client = new osc.Client('127.0.0.1', 3334)
 
-/******************** node-osc + sensorTag */
+// test
+//var testSend = setInterval(function() {
+//	osc_client.send('sensorTag_accelerometer ' + Math.random() * 8 + ' ' + Math.random() * 8 + ' ' + Math.random() * 8);
+//}, 500);
 
+/******************** node-osc + sensorTag */
+// commented out for the "test" above
 st.discover(function (tag) {
 	tag.on('disconnect', function () {
 		console.log('disconnected!');
@@ -69,13 +74,13 @@ st.discover(function (tag) {
 
   function listenForAccel() {
     tag.on('accelerometerChange', function(x, y, z) {
-      // store accelerometer data (in G)
+      // store accelerometer data (in -8.0 ~ 8.0 G)
       accel[0] = x.toFixed(3);
       accel[1] = y.toFixed(3);
       accel[2] = z.toFixed(3);
       // send osc msgs
-      osc_client.send('/sensortag', [accel]);
-      console.log("messege sent");
+      osc_client.send('sensorTag_accelerometer ' + accel[0] + ' ' + accel[1] + ' ' + accel[2]);
+      console.log("message sent");
     });
   }
 
