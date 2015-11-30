@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.8/p5.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.8/addons/p5.dom.js"></script>
+  <script type="text/javascript">
+  var socket = new WebSocket("ws://127.0.0.1:8081");
+
+  var xoff;
+  var yoff;
+  var colfade = 20;
+  var opac = 10;
+  var num = 4;
+  var list = [];
+  var x = 0, y = 0;
+
+  function setup() {
+    // The socket connection needs two event listeners:
+    socket.onopen = openSocket;
+    socket.onmessage = showData;
+
+    createCanvas(600, 600);
+        // background(0);
+    for (var i = 0; i < num; i++) {
+      list.push(new ball());
+    }
+  }
+
+  function draw() {
+        background(0,8);
+    noFill();
+
+    for (i = 0; i < list.length - num-1; i++) {
+      // if(x>300){
+            list[i].update();
+            stroke(255,colfade);
+      // }
+
+      if (x>500) {
+        num += 1;
+          list[i + num -3].update();
+            stroke(28,20,200 );
+      }
+
+      // if (y>500) {
+      // list[i + 2].update();
+      // stroke(120,80,200);
+      // }
+
+
+      // stroke(random(255), random(255), random(255), 20);
+
+      beginShape();
+      curveVertex(list[i].loc.x, list[i].loc.y);
+      curveVertex(list[i + 1].loc.x, list[i + 1].loc.y);
+      curveVertex(list[i + 2].loc.x, list[i + 2].loc.y);
+
+
+      curveVertex(list[i].loc.x, list[i].loc.y);
+      curveVertex(list[i + 1].loc.x, list[i + 1].loc.y);
+      curveVertex(list[i + 2].loc.x, list[i + 2].loc.y);
+      endShape();
+    }
+    colfade -= 0.01;
+    // opac -= 0.02;
+    // console.log(list[i].nos.x +"_"+list[i].nos.y +"_"+list[i].xoff+"_"+list[i].yoff);
+  }
+
+  function ball() {
+    //declare the variables
+    this.xoff = 0.0;
+    this.yoff = 0.0;
+    this.loc = createVector(random(width), random(height));
+    this.velo = createVector(0, 0);
+    this.nos = map(noise(this.xoff, this.yoff),0,1,0.01,0.06);
+
+    //update the location value
+    this.update = function() {
+      // this.mousetracking = createVector(mouseX, mouseY);
+      this.mousetracking = createVector(300,300)
+      this.dir = this.mousetracking.sub(this.loc);
+      this.dir.normalize();
+      this.dir.mult(this.nos);
+      this.acc = this.dir;
+      this.loc.add(this.velo);
+      this.velo.add(this.acc);
+      this.velo.limit(10);
+      this.xoff += 0.05;
+      this.yoff += 0.02;
+    }
+  }
+
+  function openSocket() {
+    socket.send("Hello server");
+  }
+
+  function showData(result) {
+    // // when the server returns, show the result in the div:
+    // text.html("Sensor reading:" + result.data);
+    // x = map(parseInt(result.data.x), -8.0, 8.0, 0, width);
+    x = JSON.parse(result.data).x;
+    y = JSON.parse(result.data).y;
+        // z = JSON.parse(result.data).z;
+    x = map(x, -8.0, 8.0, 0, width);
+    y = map(y, -8.0, 8.0, 0,height);
+      // z = map(y, -8.0, 8.0, 0, height);
+    // y = map(int(result.data.y), -8.0, 8.0, 0, height);
+    console.log('x: ' + x + ' y: ' + y);
+    // xPos = int(result.data);        // convert result to an integer
+    // text.position(xPos, 10);        // position the text
+  }
+  </script>
+<meta charset="utf-8">
+<title></title>
+</head>
+<body>
+
+</body>
+</html>
