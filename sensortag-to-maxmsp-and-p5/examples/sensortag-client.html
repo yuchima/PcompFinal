@@ -18,34 +18,34 @@
     // The socket connection needs two event listeners:
     socket.onopen = openSocket;
     socket.onmessage = showData;
-
+      
     createCanvas(600, 600);
-        // background(0);
-    for (var i = 0; i < num; i++) {
+        background(0);
+    for (var i = 0; i < 4; i++) {
       list.push(new ball());
     }
   }
 
   function draw() {
-        background(0,8);
+  // background(0);
     noFill();
 
-    for (i = 0; i < list.length - num-1; i++) {
+    for (i = 0; i < list.length - 3; i++) {
       // if(x>300){
             list[i].update();
-            stroke(255,colfade);
+            stroke(255,20);
       // }
 
-      if (x>500) {
-        num += 1;
-          list[i + num -3].update();
-            stroke(28,20,200 );
+      if (x>400) {
+        // num += 1; 
+          list[i + 1].update();
+            stroke(255,50);
       }
 
-      // if (y>500) {
-      // list[i + 2].update();
-      // stroke(120,80,200);
-      // }
+      if (y>400) {
+      list[i + 2].update();
+      stroke(255,70);
+      }
 
 
       // stroke(random(255), random(255), random(255), 20);
@@ -77,7 +77,7 @@
     //update the location value
     this.update = function() {
       // this.mousetracking = createVector(mouseX, mouseY);
-      this.mousetracking = createVector(300,300)
+      this.mousetracking = createVector(x,y)
       this.dir = this.mousetracking.sub(this.loc);
       this.dir.normalize();
       this.dir.mult(this.nos);
@@ -85,7 +85,7 @@
       this.loc.add(this.velo);
       this.velo.add(this.acc);
       this.velo.limit(10);
-      this.xoff += 0.05;
+      this.xoff += 0.01;
       this.yoff += 0.02;
     }
   }

@@ -27,6 +27,28 @@
 //
 // console.log('Server running at http://127.0.0.1:' + port);
 
+/******************** WebSocket */
+var WebSocketServer = require('ws').Server,
+		port = 8081,
+		wss = new WebSocketServer({ port: port }),
+		connections = [];
+
+wss.on('connection', function(client) {
+	console.log('New Connection');
+	connections.push(client);
+	client.on('close', function() {
+		console.log('connection closed');
+		var position = connections.indexOf(client);
+		connections.splice(position, 1);
+	});
+});
+
+function broadcast(accel) {
+	connections.forEach(function (connection) {
+		connection.send(JSON.stringify(accel));
+	})
+}
+
 /******************** sensorTag */
 
 var st = require('sensortag')
@@ -80,6 +102,10 @@ st.discover(function (tag) {
       accel[2] = z.toFixed(3);
       // send osc msgs
       osc_client.send('sensorTag_accelerometer ' + accel[0] + ' ' + accel[1] + ' ' + accel[2]);
+      // broadcast accel data
+      if (connections.length > 0) {
+      	broadcast({ x:accel[0], y:accel[1], z:accel[2] });
+      }
       console.log("message sent");
     });
   }
