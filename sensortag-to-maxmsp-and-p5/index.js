@@ -51,8 +51,9 @@ function broadcast(accel) {
 
 /******************** sensorTag */
 
-var st = require('sensortag')
-accel = [0, 0, 0]
+var st = require('sensortag'),
+	accel = [0, 0, 0],
+	gyro = [0, 0, 0];
 
 /******************** node-osc */
 
@@ -84,10 +85,11 @@ st.discover(function (tag) {
 	}
 
 	function enableAccel() {
-		console.log('enableAccelerometer');
+		console.log('enabling Accelerometer...');
 		tag.enableAccelerometer(setAccelPeriod);	// here we enable its range to be +-8G directly thru modifying common.js
 	}
 
+	///** enableAccel and setAccelRangeMax are experimental */
 	//function enableAccel() {
 	//	console.log('enableAccelerometer');
 	//	tag.enableAccelerometer(setAccelRangeMax);
@@ -101,30 +103,59 @@ st.discover(function (tag) {
 
 	// set period/sample rate of the accelerometer (minimum period 100ms)
 	function setAccelPeriod() {
-		console.log('set accelerometer period...');
-		tag.setAccelerometerPeriod(100, notifyMe);
+		console.log('setting accelerometer period to 100ms...');
+		tag.setAccelerometerPeriod(100, enableGyro);
+	}
+
+	function enableGyro() {
+		console.log('enabling Gyroscope...');
+		tag.enableGyroscope(setGyroPeriod)
+	}
+
+	/* useless */
+	function setGyroPeriod() {
+		console.log('setting Gyroscope period to 100ms...');
+		tag.setGyroscopePeriod(100, notifyMe);
 	}
 
 	function notifyMe() {
 		console.log('begin notification');
 		tag.notifyAccelerometer(listenForAccel);
+		tag.notifyGyroscope(listenForGyro);
 		tag.notifySimpleKey(listenForButton);
 	}
 
 	function listenForAccel() {
 		tag.on('accelerometerChange', function(x, y, z) {
-			// store accelerometer data (in -8.0 ~ 8.0 G)
+			// store acceleration, unit g, range -2, +2
 			accel[0] = x.toFixed(3);
 			accel[1] = y.toFixed(3);
 			accel[2] = z.toFixed(3);
 			// send osc msgs
-			var osc_msg = 'sensorTag_accelerometer ' + accel[0] + ' ' + accel[1] + ' ' + accel[2]
+			var osc_msg = 'st_accelerometer\t'+accel[0]+'\t'+accel[1]+'\t'+accel[2];
 			osc_client.send(osc_msg);
 			// broadcast accel data
 			if (connections.length > 0) {
-				broadcast({ x:accel[0], y:accel[1], z:accel[2] });
+				broadcast({ accel_x : accel[0], accel_y : accel[1], accel_z : accel[2] });
 			}
 			//console.log("message sent");
+			console.log(osc_msg);
+		});
+	}
+
+	function listenForGyro() {
+		tag.on('gyroscopeChange', function(x, y, z) {
+			// store rotation, unit deg/s, range -250, +250
+			gyro[0] = x.toFixed(3);
+			gyro[1] = y.toFixed(3);
+			gyro[2] = z.toFixed(3);
+			// send osc msgs
+			var osc_msg = 'st_gyroscope\t\t'+gyro[0]+'\t'+gyro[1]+'\t'+gyro[2];
+			osc_client.send(osc_msg);
+			// broadcast gyro data
+			if (connections.length > 0) {
+				broadcast({ gyro_x : gyro[0], gyro_y : gyro[1], gyro_z : gyro[2] });
+			}
 			console.log(osc_msg);
 		});
 	}
