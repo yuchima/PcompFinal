@@ -56,15 +56,11 @@ var st = require('sensortag'),
 	gyro = [0, 0, 0];
 
 /******************** node-osc */
-
-var osc = require('node-osc')
-osc_server = new osc.Server(3333, '127.0.0.1')
-osc_client = new osc.Client('127.0.0.1', 3334)
-
-// test
-//var testSend = setInterval(function() {
-//	osc_client.send('sensorTag_accelerometer ' + Math.random() * 8 + ' ' + Math.random() * 8 + ' ' + Math.random() * 8);
-//}, 500);
+// local machine
+// port 57120 my SuperCollider uses (NetAddr.langPort to ensure)
+var osc = require('node-osc'),
+osc_server = new osc.Server(3333, '127.0.0.1'),
+osc_client = new osc.Client('127.0.0.1', 57120);
 
 /******************** node-osc + sensorTag */
 // commented out for the "test" above
@@ -131,8 +127,15 @@ st.discover(function (tag) {
 			accel[0] = x.toFixed(3);
 			accel[1] = y.toFixed(3);
 			accel[2] = z.toFixed(3);
-			// send osc msgs
-			var osc_msg = 'st_accelerometer\t'+accel[0]+'\t'+accel[1]+'\t'+accel[2];
+			// send OSC msg
+			var osc_msg = {
+				address: '/accel',
+				args: [
+					accel[0],
+					accel[1],
+					accel[2]
+				]
+			};
 			osc_client.send(osc_msg);
 			// broadcast accel data
 			if (connections.length > 0) {
@@ -149,8 +152,15 @@ st.discover(function (tag) {
 			gyro[0] = x.toFixed(3);
 			gyro[1] = y.toFixed(3);
 			gyro[2] = z.toFixed(3);
-			// send osc msgs
-			var osc_msg = 'st_gyroscope\t\t'+gyro[0]+'\t'+gyro[1]+'\t'+gyro[2];
+			// send OSC msgs
+			var osc_msg = {
+				address: '/gyro',
+				args: [
+					gyro[0],
+					gyro[1],
+					gyro[2]
+				]
+			}
 			osc_client.send(osc_msg);
 			// broadcast gyro data
 			if (connections.length > 0) {
