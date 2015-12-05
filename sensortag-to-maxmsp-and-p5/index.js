@@ -49,6 +49,15 @@ function broadcast(accel) {
 	})
 }
 
+/******************** serialport */
+var serialport = require('serialport')
+var SerialPort = serialport.SerialPort;
+var portname = '/dev/cu.AdafruitEZ-Link7441-SPP';
+var myport = new SerialPort(portname, {
+	baudRate: 115200,
+	parser: serialport.parsers.readline("\n")
+});
+
 /******************** sensorTag */
 
 var st = require('sensortag'),
@@ -61,6 +70,32 @@ var st = require('sensortag'),
 var osc = require('node-osc'),
 osc_server = new osc.Server(3333, '127.0.0.1'),
 osc_client = new osc.Client('127.0.0.1', 57120);
+
+/******************** node-osc + serialport */
+myport.on("open", function () {
+  console.log('open');
+});
+
+myport.on('data', function (data) {
+	data = data.split(/\s+/);
+	accel[0] = data[2];
+	accel[1] = data[4];
+	accel[2] = data[6];
+
+	// send OSC msg
+	var osc_msg = {
+		address: '/accel',
+		args: [
+			accel[0],
+			accel[1],
+			accel[2]
+		]
+	};
+	osc_client.send(osc_msg);
+
+	//console.log("message sent");
+	console.log(osc_msg);
+});
 
 /******************** node-osc + sensorTag */
 // commented out for the "test" above
