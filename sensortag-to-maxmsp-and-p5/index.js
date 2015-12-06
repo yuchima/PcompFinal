@@ -28,6 +28,7 @@
 // console.log('Server running at http://127.0.0.1:' + port);
 
 /******************** WebSocket */
+
 var WebSocketServer = require('ws').Server,
 		port = 8081,
 		wss = new WebSocketServer({ port: port }),
@@ -50,6 +51,7 @@ function broadcast(accel) {
 }
 
 /******************** serialport */
+
 var serialport = require('serialport')
 var SerialPort = serialport.SerialPort;
 var portname = '/dev/cu.AdafruitEZ-Link7441-SPP';
@@ -61,43 +63,83 @@ var myport = new SerialPort(portname, {
 /******************** sensorTag */
 
 var st = require('sensortag'),
-	accel = [0, 0, 0],
-	gyro = [0, 0, 0];
+	// accel = [0, 0, 0],        // m/s^2
+	orientation = [0, 0, 0],  // degrees
+	linear_accel = [0, 0, 0], // m/s^2
+	gyro = [0, 0, 0];         // rad/s
 
 /******************** node-osc */
-// local machine
-// port 57120 my SuperCollider uses (NetAddr.langPort to ensure)
+
+/*
+ * local machine
+ * port 57120 for SuperCollider (NetAddr.langPort to ensure)
+ * port 3002  for MaxMSP
+*/
 var osc = require('node-osc'),
 osc_server = new osc.Server(3333, '127.0.0.1'),
-osc_client = new osc.Client('127.0.0.1', 57120);
+osc_client_max = new osc.Client('127.0.0.1', 3002),
+osc_client_sc = new osc.Client('127.0.0.1', 57120);
+
+var osc_msg_orientation,
+osc_msg_linear_accel,
+osc_msg_gyro;
 
 /******************** node-osc + serialport */
+
 myport.on("open", function () {
   console.log('open');
 });
 
 myport.on('data', function (data) {
 	data = data.split(/\s+/);
-	accel[0] = data[2];
-	accel[1] = data[4];
-	accel[2] = data[6];
+
+	orientation[0] = parseFloat(data[0]);
+	orientation[1] = parseFloat(data[1]);
+	orientation[2] = parseFloat(data[2]);
+	linear_accel[0] = parseFloat(data[3]);
+	linear_accel[1] = parseFloat(data[4]);
+	linear_accel[2] = parseFloat(data[5]);
+	gyro[0] = parseFloat(data[6]);
+	gyro[1] = parseFloat(data[7]);
+	gyro[2] = parseFloat(data[8]);
 
 	// send OSC msg
-	var osc_msg = {
-		address: '/accel',
+	osc_msg_orientation = {
+		address: '/bno055/orientation',
 		args: [
-			accel[0],
-			accel[1],
-			accel[2]
+			orientation[0],
+			orientation[1],
+			orientation[2]
 		]
 	};
-	osc_client.send(osc_msg);
+	osc_client_max.send(osc_msg_orientation);
 
-	//console.log("message sent");
-	console.log(osc_msg);
+	osc_msg_linear_accel = {
+		address: '/bno055/linear_accel',
+		args: [
+			linear_accel[0],
+			linear_accel[1],
+			linear_accel[2]
+		]
+	}
+	osc_client_max.send(osc_msg_linear_accel)
+
+	osc_msg_gyro = {
+		address: '/bno055/gyro',
+		args: [
+			gyro[0],
+			gyro[1],
+			gyro[2]
+		]
+	};
+
+	console.log(osc_msg_orientation);
+	console.log(osc_msg_linear_accel);
+	console.log(osc_msg_gyro);
 });
 
 /******************** node-osc + sensorTag */
+
 // commented out for the "test" above
 st.discover(function (tag) {
 	tag.on('disconnect', function () {
@@ -171,7 +213,7 @@ st.discover(function (tag) {
 					accel[2]
 				]
 			};
-			osc_client.send(osc_msg);
+			osc_client_sc.send(osc_msg);
 			// broadcast accel data
 			if (connections.length > 0) {
 				broadcast({ accel_x : accel[0], accel_y : accel[1], accel_z : accel[2] });
@@ -196,7 +238,7 @@ st.discover(function (tag) {
 					gyro[2]
 				]
 			}
-			osc_client.send(osc_msg);
+			osc_client_sc.send(osc_msg);
 			// broadcast gyro data
 			if (connections.length > 0) {
 				broadcast({ gyro_x : gyro[0], gyro_y : gyro[1], gyro_z : gyro[2] });
