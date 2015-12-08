@@ -26,6 +26,7 @@ SynthDef(\boxing, {
   Out.ar(0, out.dup);
 }).add;
 )
+
 (
 // ~globaltimeprev = 0;
 a = 0;
@@ -35,14 +36,14 @@ b = 1;
 c = b - a;
 ~oscAccel = OSCFunc.newMatching(
   {|msg, time, addr, recvPort|
-    // [time, msg[1]].postln; // msg[1] is accel_x, msg[2] is accel_y, msg[3] is accel_z
+    [time, msg[1]].postln; // msg[1] is accel_x, msg[2] is accel_y, msg[3] is accel_z
     if (
       ((sqrt(msg[1].asFloat.squared + msg[2].asFloat.squared + msg[3].asFloat.squared)-1)/2.464 > 0.4).postln,
       {b = time; c = b - a;
         if ( (c.postln > 0.3), {c.reciprocal.postln; Synth(\boxing, [punchrate: c.reciprocal]); a = time})}
     );
   },
-  '/accel'
+  '/bno055/linear_accel'
 );
 //
 // ~oscGyro = OSCFunc.newMatching(
