@@ -93,15 +93,15 @@ myport.on("open", function () {
 myport.on('data', function (data) {
 	data = data.split(/\s+/);
 
-	orientation[0] = parseFloat(data[0]);
-	orientation[1] = parseFloat(data[1]);
-	orientation[2] = parseFloat(data[2]);
-	linear_accel[0] = parseFloat(data[3]);
-	linear_accel[1] = parseFloat(data[4]);
-	linear_accel[2] = parseFloat(data[5]);
-	gyro[0] = parseFloat(data[6]);
-	gyro[1] = parseFloat(data[7]);
-	gyro[2] = parseFloat(data[8]);
+	orientation[0] = parseFloat(data[0]).toFixed(3);
+	orientation[1] = parseFloat(data[1]).toFixed(3);
+	orientation[2] = parseFloat(data[2]).toFixed(3);
+	linear_accel[0] = parseFloat(data[3]).toFixed(3);
+	linear_accel[1] = parseFloat(data[4]).toFixed(3);
+	linear_accel[2] = parseFloat(data[5]).toFixed(3);
+	gyro[0] = parseFloat(data[6]).toFixed(3);
+	gyro[1] = parseFloat(data[7]).toFixed(3);
+	gyro[2] = parseFloat(data[8]).toFixed(3);
 
 	// send OSC msg
 	osc_msg_orientation = {
@@ -112,7 +112,10 @@ myport.on('data', function (data) {
 			orientation[2]
 		]
 	};
+
+	// TODO: put all clients in an array
 	osc_client_max.send(osc_msg_orientation);
+	osc_client_sc.send(osc_msg_orientation);
 
 	osc_msg_linear_accel = {
 		address: '/bno055/linear_accel',
@@ -122,7 +125,8 @@ myport.on('data', function (data) {
 			linear_accel[2]
 		]
 	}
-	osc_client_max.send(osc_msg_linear_accel)
+	osc_client_max.send(osc_msg_linear_accel);
+	osc_client_sc.send(osc_msg_linear_accel);
 
 	osc_msg_gyro = {
 		address: '/bno055/gyro',
@@ -132,6 +136,9 @@ myport.on('data', function (data) {
 			gyro[2]
 		]
 	};
+
+	osc_client_max.send(osc_msg_gyro);
+	osc_client_sc.send(osc_msg_gyro);
 
 	console.log(osc_msg_orientation);
 	console.log(osc_msg_linear_accel);
